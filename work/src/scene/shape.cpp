@@ -110,8 +110,7 @@ RayIntersection Plane::intersect(const Ray &ray) {
 
 
 RayIntersection Disk::intersect(const Ray &ray) {
-    RayIntersection intersect;
-    float denom = glm::dot(m_normal, ray.direction);
+    /*float denom = glm::dot(m_normal, ray.direction);
     if (denom > 1e-6) {
         vec3 p0l0 = m_center - ray.origin;
         float t = glm::dot(p0l0, m_normal) / denom;
@@ -132,8 +131,19 @@ RayIntersection Disk::intersect(const Ray &ray) {
                 intersect.m_shape = this;
             }
         }
+
+    }*/
+    float t = 0;
+    Plane m_plane = Plane(m_center, m_normal);
+    RayIntersection intersection = m_plane.intersect(ray);
+    if (intersection.m_valid) {
+        vec3 d = intersection.m_position - m_center;
+
+        if (glm::length(d) > m_radius) {
+            intersection.m_valid = false;
+        }
     }
-    return intersect;
+    return intersection;
 }
 
 RayIntersection Triangle::intersect(const Ray &ray) {

@@ -51,11 +51,11 @@ public:
 // YOUR CODE GOES HERE
 class Plane : public Shape {
 private:
-    glm::vec3 m_normal;
     glm::vec3 m_point;
+    glm::vec3 m_normal;
 
 public:
-    Plane(const glm::vec3 &n, const glm::vec3 &p) : m_normal(n), m_point(p) { }
+    Plane(const glm::vec3 &p, const glm::vec3 &n) : m_point(p), m_normal(n) { }
     virtual RayIntersection intersect(const Ray &ray) override;
 };
 

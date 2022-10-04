@@ -123,14 +123,15 @@ Scene Scene::shapeScene() {
 	//-------------------------------------------------------------
 
 	shared_ptr<Material> white = make_shared<Material>(vec3(1), 1.05f, 0.1, 0);
+    shared_ptr<Material> black = make_shared<Material>(vec3(0.1), 1.05f, 0.1, 0);
 
 	objects.push_back(make_shared<SceneObject>(make_shared<AABB>(vec3(-3, 0, -5), vec3(0.5)), white));
 	objects.push_back(make_shared<SceneObject>(make_shared<Sphere>(vec3(-1, 0, -5), 0.5), white));
 
 	// YOUR CODE GOES HERE
-    objects.push_back(make_shared<SceneObject>(make_shared<Plane>(vec3(1, 0, -5), vec3(0, -1, 0)), white));
-    objects.push_back(make_shared<SceneObject>(make_shared<Disk>(vec3(3, 0, -5), vec3(0, 1, 0), 0.5), white));
-    objects.push_back(make_shared<SceneObject>(make_shared<Triangle>(vec3(5, 0, -5), vec3(6, 0, -5.5), vec3(6.5, 0, -5.25)), white));
+    objects.push_back(make_shared<SceneObject>(make_shared<Plane>(vec3(1, -2, -5), vec3(0.0, -0.1, 0.0)), black));
+    objects.push_back(make_shared<SceneObject>(make_shared<Disk>(vec3(0.75, 0, -5), vec3(3, 0.0, -0.8), 1.2), white));
+    objects.push_back(make_shared<SceneObject>(make_shared<Triangle>(vec3(2.0, -1.0, -5.0), vec3(3.0, -1.0, -5.0), vec3(2.0, 1, -5.0)), white));
 
 	lights.push_back(make_shared<DirectionalLight>(vec3(-1, -1, -1), vec3(0.5f), vec3(0.05f)));
 

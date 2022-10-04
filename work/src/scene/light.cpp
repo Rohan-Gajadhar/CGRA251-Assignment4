@@ -18,7 +18,9 @@ bool DirectionalLight::occluded(Scene *scene, const vec3 &point) const {
 	//-------------------------------------------------------------
 
 	// YOUR CODE GOES HERE
-    Ray ray = Ray(point - (m_direction * 0.01f), - m_direction);
+    //ray cast from the point to the light
+
+    Ray ray = Ray(point, -m_direction);
 
 	return scene->intersect(ray).m_valid;
 }
@@ -45,12 +47,13 @@ bool PointLight::occluded(Scene *scene, const vec3 &point) const {
 	//-------------------------------------------------------------
 
 	// YOUR CODE GOES HERE
-	vec3 dir = point - m_position;
-    float length = dir.length();
-    Ray ray = Ray(point, normalize(-dir));
+	vec3 dir = m_position - point;
+
+    float length = distance(m_position, point);
 
     if(length > 0) {
-        if(scene->intersect(ray).m_valid && scene->intersect(ray).m_distance < distance(m_position, point)) {
+        Ray ray = Ray(point, normalize(dir));
+        if(scene->intersect(ray).m_valid && scene->intersect(ray).m_distance < length) {
             return true;
         }
     }
@@ -66,7 +69,7 @@ vec3 PointLight::incidentDirection(const vec3 &point) const {
 
 	// YOUR CODE GOES HERE
     vec3 dir = point - m_position;
-    float length = dir.length();
+    float length = distance(m_position, point);
 
     if(length > 0) {return normalize(dir);}
 
@@ -85,8 +88,7 @@ vec3 PointLight::irradiance(const vec3 &point) const {
 	//-------------------------------------------------------------
 
 	// YOUR CODE GOES HERE
-    vec3 dir = point - m_position;
-    float length = dir.length();
+    float length = distance(m_position, point);
 
     if(length > 0) {
         float i = 4.0f * M_PI * (length * length);

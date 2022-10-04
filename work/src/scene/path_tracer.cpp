@@ -65,13 +65,15 @@ vec3 CorePathTracer::sampleRay(const Ray &ray, int) {
                 irradiance = m_scene->lights()[i]->irradiance(rayIntersect.m_position);
                 incident = m_scene->lights()[i]->incidentDirection(rayIntersect.m_position);
                 normal = rayIntersect.m_normal;
+
                 float firstAngle = glm::max(0.f, dot(-incident, normal));
 
                 //Lambertian
                 diffuse += irradiance * firstAngle * rayIntersect.m_material->diffuse();
 
-                vec3 reflection = glm::reflect(ray.direction, normal);
-                float secondAngle = glm::max(0.f, dot(-incident, reflection));
+                vec3 reflection = glm::reflect(incident, normal);
+
+                float secondAngle = glm::max(0.f, dot(-ray.direction, reflection));
                 float angleSpec = pow(secondAngle, rayIntersect.m_material->shininess());
 
                 //Blinn-Phong
@@ -86,7 +88,69 @@ vec3 CorePathTracer::sampleRay(const Ray &ray, int) {
 }
 
 
+vec3 CompletionPathTracer::sampleRay(const Ray &ray, int depth) {
+    //-------------------------------------------------------------
+    // [Assignment 4] :
+    // Using the same requirements for the CorePathTracer add in
+    // a recursive element to calculate perfect specular reflection.
+    // That is compute the reflection ray off your intersection and
+    // sample a ray in that direction, using the result to additionally
+    // light your object. To make this more realistic you may weight
+    // the incoming light by the (1 - (1/shininess)).
+    //-------------------------------------------------------------
 
+    // YOUR CODE GOES HERE
+    RayIntersection rayIntersect = m_scene->intersect(ray);
+    //Initialise diffuse and specular to 0 to prevent colour distortion
+    vec3 diffuse = vec3(0, 0, 0);
+    vec3 specular = vec3(0, 0, 0);
+    vec3 reflectedLight = vec3(0, 0, 0);
+    vec3 irradiance;
+    vec3 normal;
+    vec3 incident;
+
+    if(rayIntersect.m_valid) {
+        for(size_t i = 0; i < m_scene->lights().size(); i++) {
+            //Ambient
+            diffuse += m_scene->lights()[i]->ambience() * rayIntersect.m_material->diffuse();
+
+            if(!m_scene->lights()[i]->occluded(m_scene, rayIntersect.m_position)) {
+                irradiance = m_scene->lights()[i]->irradiance(rayIntersect.m_position);
+                incident = m_scene->lights()[i]->incidentDirection(rayIntersect.m_position);
+                normal = rayIntersect.m_normal;
+
+                float firstAngle = glm::max(0.f, dot(-incident, normal));
+
+                //Lambertian
+                diffuse += irradiance * firstAngle * rayIntersect.m_material->diffuse();
+
+                vec3 reflection = glm::reflect(incident, normal);
+
+                float secondAngle = glm::max(0.f, dot(-ray.direction, reflection));
+                float angleSpec = pow(secondAngle, rayIntersect.m_material->shininess());
+
+                //Blinn-Phong
+                specular += irradiance * angleSpec * rayIntersect.m_material->specular();
+
+                if (depth > 1) {
+                    vec3 reflectedDirection = normalize(glm::reflect(ray.direction, rayIntersect.m_normal));
+
+                    Ray reflectionRay = Ray(rayIntersect.m_position, reflectedDirection);
+
+                    vec3 rayReflection = sampleRay(reflectionRay, depth - 1) * rayIntersect.m_material->specular();
+
+                    reflectedLight += rayReflection * (1 - (1 / rayIntersect.m_material->shininess()));
+                }
+            }
+        }
+        return diffuse + specular + reflectedLight;
+    }
+
+    // no intersection - return background color
+    return { 0.3f, 0.3f, 0.4f };
+}
+
+/*
 vec3 CompletionPathTracer::sampleRay(const Ray &ray, int depth) {
 	//-------------------------------------------------------------
 	// [Assignment 4] :
@@ -103,9 +167,10 @@ vec3 CompletionPathTracer::sampleRay(const Ray &ray, int depth) {
     //Initialise diffuse and specular to 0 to prevent colour distortion
     vec3 diffuse = vec3(0, 0, 0);
     vec3 specular = vec3(0, 0, 0);
+    vec3 reflection = vec3(0, 0, 0);
     vec3 irradiance;
-    vec3 incident;
     vec3 normal;
+    vec3 incident;
 
     if(rayIntersect.m_valid) {
         for(size_t i = 0; i < m_scene->lights().size(); i++) {
@@ -116,29 +181,34 @@ vec3 CompletionPathTracer::sampleRay(const Ray &ray, int depth) {
                 irradiance = m_scene->lights()[i]->irradiance(rayIntersect.m_position);
                 incident = m_scene->lights()[i]->incidentDirection(rayIntersect.m_position);
                 normal = rayIntersect.m_normal;
+
                 float firstAngle = glm::max(0.f, dot(-incident, normal));
 
                 //Lambertian
                 diffuse += irradiance * firstAngle * rayIntersect.m_material->diffuse();
 
-                vec3 reflection = glm::reflect(ray.direction, normal);
+                vec3 spec_reflection = glm::reflect(incident, normal);
 
-                float secondAngle = glm::max(0.f, dot(-incident, reflection));
+                float secondAngle = glm::max(0.f, dot(spec_reflection, -ray.direction));
                 float angleSpec = pow(secondAngle, rayIntersect.m_material->shininess());
 
                 //Blinn-Phong
                 specular += irradiance * angleSpec * rayIntersect.m_material->specular();
 
-                vec3 reflectedRay = sampleRay(Ray(rayIntersect.m_position, reflection), depth + 1);
-                specular += reflectedRay * (1 - (1 / rayIntersect.m_material->shininess()));
+                if (depth > 1) {
+                    vec3 reflectedDirection = glm::reflect(ray.direction, -rayIntersect.m_normal);
+                    Ray reflectionRay = Ray(rayIntersect.m_position, normalize(reflectedDirection));
+                    vec3 rayReflection = sampleRay(reflectionRay, depth - 1);
+                    reflection += rayReflection * (1 - (1 / rayIntersect.m_material->shininess()));
+                }
             }
         }
-        return diffuse + specular;
+        return diffuse + specular + reflection;
     }
 
     // no intersection - return background color
     return { 0.3f, 0.3f, 0.4f };
-}
+}*/
 
 
 
