@@ -47,13 +47,12 @@ bool PointLight::occluded(Scene *scene, const vec3 &point) const {
 	//-------------------------------------------------------------
 
 	// YOUR CODE GOES HERE
-	vec3 dir = m_position - point;
-
+	vec3 dir = point - m_position;
     float length = distance(m_position, point);
 
     if(length > 0) {
-        Ray ray = Ray(point, normalize(dir));
-        if(scene->intersect(ray).m_valid && scene->intersect(ray).m_distance < length) {
+        Ray ray = Ray(point, normalize(-dir));
+        if(scene->intersect(ray).m_valid && scene->intersect(ray).m_distance < distance(m_position, point)) {
             return true;
         }
     }
@@ -69,11 +68,8 @@ vec3 PointLight::incidentDirection(const vec3 &point) const {
 
 	// YOUR CODE GOES HERE
     vec3 dir = point - m_position;
-    float length = distance(m_position, point);
 
-    if(length > 0) {return normalize(dir);}
-
-	return vec3(0);
+    return normalize(dir);
 }
 
 
@@ -88,12 +84,12 @@ vec3 PointLight::irradiance(const vec3 &point) const {
 	//-------------------------------------------------------------
 
 	// YOUR CODE GOES HERE
-    float length = distance(m_position, point);
+    vec3 dir = point - m_position;
 
-    if(length > 0) {
-        float i = 4.0f * M_PI * (length * length);
+    if(length(dir) > 0) {
+        float i = 4.0f * M_PI * pow(length(dir), 2.0f);
         return m_flux/i;
     }
 
-	return m_flux;
+	else{return m_flux;}
 }

@@ -62,7 +62,6 @@ RayIntersection AABB::intersect(const Ray &ray) {
 
 
 RayIntersection Sphere::intersect(const Ray &ray) {
-	RayIntersection intersect;
 	//-------------------------------------------------------------
 	// [Assignment 4] :
 	// Implement the intersection method for Sphere that returns
@@ -78,10 +77,12 @@ RayIntersection Sphere::intersect(const Ray &ray) {
 	//-------------------------------------------------------------
 
 	// YOUR CODE GOES HERE
+    RayIntersection intersect;
+    intersect.m_valid = false;
 	vec3 L = m_center - ray.origin;
     float tca = glm::dot(L, ray.direction);
-    float d = glm::dot(L, L) - tca*tca;
-    float thc = glm::sqrt(m_radius*m_radius-d);
+    float d = glm::dot(L, L) - tca * tca;
+    float thc = glm::sqrt(m_radius * m_radius - d);
     float t0 = tca - thc;
     float t1 = tca + thc;
 
@@ -102,7 +103,7 @@ RayIntersection Plane::intersect(const Ray &ray) {
         intersect.m_valid = true;
         intersect.m_distance = glm::dot(m_point - ray.origin, m_normal) / denom;
         intersect.m_position = ray.origin + intersect.m_distance * ray.direction;
-        intersect.m_normal = m_normal;
+        intersect.m_normal = dot(ray.direction, m_normal) > 0 ? -m_normal : m_normal;
         intersect.m_shape = this;
     }
     return intersect;
@@ -110,30 +111,6 @@ RayIntersection Plane::intersect(const Ray &ray) {
 
 
 RayIntersection Disk::intersect(const Ray &ray) {
-    /*float denom = glm::dot(m_normal, ray.direction);
-    if (denom > 1e-6) {
-        vec3 p0l0 = m_center - ray.origin;
-        float t = glm::dot(p0l0, m_normal) / denom;
-        if (t >= 0) {
-            RayIntersection intersect;
-            intersect.m_valid = true;
-            intersect.m_distance = t;
-            intersect.m_position = ray.origin + t * ray.direction;
-            intersect.m_normal = m_normal;
-            intersect.m_shape = this;
-            vec3 p = intersect.m_position - m_center;
-            float d = glm::sqrt(p.x*p.x + p.y*p.y);
-            if (d <= m_radius) {
-                intersect.m_valid = true;
-                intersect.m_distance = t;
-                intersect.m_position = ray.origin + t * ray.direction;
-                intersect.m_normal = m_normal;
-                intersect.m_shape = this;
-            }
-        }
-
-    }*/
-    float t = 0;
     Plane m_plane = Plane(m_center, m_normal);
     RayIntersection intersection = m_plane.intersect(ray);
     if (intersection.m_valid) {
